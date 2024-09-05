@@ -1,0 +1,12 @@
+#map-container {
+    position: relative;
+  }
+  
+  #canvas {
+    position: absolute;
+    top: 0;
+    left: 5;
+    z-index: 1; /* Ensure the canvas is above the image */
+    pointer-events: none; /* Allow click events to pass through the canvas to the underlying image */
+  }
+  

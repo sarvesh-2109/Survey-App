@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>Survey App</title>
+
+
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.4.1/dist/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+    <link rel="stylesheet" href="/css/style.css">
+    
+</head>
+<body>
+
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-info">
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation"><span class="navbar-toggler-icon"></span></button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav">
+            <!--Buttons-->
+ 
+            <button id="addPlacemarksBtn" type="button" class="btn btn-warning" style="margin-right: 5px;">Add Placemarks</button>
+         
+            <button id="clearPlacemarksBtn" type="button" class="btn btn-danger" style="margin-right: 5px;">Clear Placemarks</button>
+
+            <button id="drawPolylineBtn" type="button" class="btn btn-warning" style="margin-right: 5px;">Add Polyline</button>
+
+            <button id="clearPolylineBtn" type="button" class="btn btn-danger" style="margin-right: 5px;">Clear Polyline</button>
+
+            <button id="saveLayerBtn" type="button" class="btn btn-warning" style="margin-right: 5px;">Save Layer</button>
+            
+            <button id="deleteLayerBtn" type="button" class="btn btn-danger" style="margin-right: 5px;">Delete Layer(s)</button>
+
+            <div class="btn-group" style="margin-right: 5px;">
+                <button type="button" class="btn btn-light dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                  Download as
+                </button>
+                <div class="dropdown-menu">
+                  <a class="dropdown-item" href="#" id="downloadImageBtn">Image</a>
+                  <a class="dropdown-item" href="#" id="downloadKMLBtn">KML</a>
+                </div>
+            </div>
+            
+            <input type="file" id="uploadKMLBtn" style="display: none;" accept=".kml, .kmz">
+            <label for="uploadKMLBtn" id="uploadKMLFileLabel" class="btn btn-primary" style="margin-right: 5px;">Upload KML</label>
+
+            <input type="file" id="uploadCSVBtn" style="display: none;" accept=".csv">
+            <label for="uploadCSVBtn" id="uploadCSVFileLabel" class="btn btn-primary" style="margin-right: 5px;">Upload CSV</label>
+
+        
+    </div>
+</nav>
+
+
+
+<!-- Container with Sidebar and Map -->
+<div class="container-fluid mt-2">
+    <div class="row">
+
+        <!-- Sidebar (4 columns) -->
+        <div class="col-md-4 bg-light" id="sidebar" >
+
+            <!-- Sidebar Content Goes Here -->
+            <div id="savedLayersContainer"></div>
+        
+        </div>
+
+
+        <!-- Map (8 columns) -->
+        <div class="col-md-8" id="map-container">
+
+            <img id="map" src="images/mapTile.jpeg" class="img-fluid" style="width: 893px; height: 893px;" alt="Map Image">
+
+            <!-- Container for Placemarks -->
+            <div id="placemark-container" position="relative"></div>
+
+            <!-- Container for Polylines -->
+            <div id="polylines-container" style="position: relative;"></div>
+
+            <canvas id="canvas" width="893px" height="893px"></canvas>
+
+        </div>
+    </div>
+</div>
+
+    <!-- Bootstrap JS, jQuery, Popper.js -->
+    <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.4.1/dist/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+
+    <!-- Custom JS -->
+    <script type="module" src="js/utility.js" defer></script>
+
+    <script type="module" src="js/placemarks.js" defer></script>
+    
+    <script type="module" src="js/polylines.js" defer></script>
+    
+    <script type="module" src="js/layers.js" defer></script>
+
+    <script type="module" src="js/download.js" defer></script>
+
+    <script type="module" src="js/upload_kml.js" defer></script>
+
+    <script type="module" src="js/upload_csv.js" defer></script>
+</body>
+</html>

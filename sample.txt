@@ -1,0 +1,905 @@
+index.html:
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>Survey App</title>
+
+
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.4.1/dist/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+    <link rel="stylesheet" href="/css/style.css">
+    
+</head>
+<body>
+
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-info">
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation"><span class="navbar-toggler-icon"></span></button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav">
+            <!--Buttons-->
+ 
+            <button id="addPlacemarksBtn" type="button" class="btn btn-warning" style="margin-right: 5px;">Add Placemarks</button>
+         
+            <button id="clearPlacemarksBtn" type="button" class="btn btn-danger" style="margin-right: 5px;">Clear Placemarks</button>
+
+            <button id="drawPolylineBtn" type="button" class="btn btn-warning" style="margin-right: 5px;">Add Polyline</button>
+
+            <button id="clearPolylineBtn" type="button" class="btn btn-danger" style="margin-right: 5px;">Clear Polyline</button>
+
+            <button id="saveLayerBtn" type="button" class="btn btn-warning" style="margin-right: 5px;">Save Layer</button>
+            
+            <button id="deleteLayerBtn" type="button" class="btn btn-danger" style="margin-right: 5px;">Delete Layer(s)</button>
+
+            <div class="btn-group" style="margin-right: 5px;">
+                <button type="button" class="btn btn-light dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                  Download as
+                </button>
+                <div class="dropdown-menu">
+                  <a class="dropdown-item" href="#" id="downloadImageBtn">Image</a>
+                  <a class="dropdown-item" href="#" id="downloadKMLBtn">KML</a>
+                </div>
+            </div>
+            
+            <input type="file" id="uploadKMLBtn" style="display: none;" accept=".kml, .kmz">
+            <label for="uploadKMLBtn" id="uploadKMLFileLabel" class="btn btn-primary" style="margin-right: 5px;">Upload KML</label>
+
+            <input type="file" id="uploadCSVBtn" style="display: none;" accept=".csv">
+            <label for="uploadCSVBtn" id="uploadCSVFileLabel" class="btn btn-primary" style="margin-right: 5px;">Upload CSV</label>
+
+        
+    </div>
+</nav>
+
+
+
+<!-- Container with Sidebar and Map -->
+<div class="container-fluid mt-2">
+    <div class="row">
+
+        <!-- Sidebar (4 columns) -->
+        <div class="col-md-4 bg-light" id="sidebar" >
+
+            <!-- Sidebar Content Goes Here -->
+            <div id="savedLayersContainer"></div>
+        
+        </div>
+
+
+        <!-- Map (8 columns) -->
+        <div class="col-md-8" id="map-container">
+
+            <img id="map" src="images/mapTile.jpeg" class="img-fluid" style="width: 893px; height: 893px;" alt="Map Image">
+
+            <!-- Container for Placemarks -->
+            <div id="placemark-container" position="relative"></div>
+
+            <!-- Container for Polylines -->
+            <div id="polylines-container" style="position: relative;"></div>
+
+            <canvas id="canvas" width="893px" height="893px"></canvas>
+
+        </div>
+    </div>
+</div>
+
+    <!-- Bootstrap JS, jQuery, Popper.js -->
+    <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.4.1/dist/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+
+    <!-- Custom JS -->
+    <script type="module" src="js/utility.js" defer></script>
+
+    <script type="module" src="js/placemarks.js" defer></script>
+    
+    <script type="module" src="js/polylines.js" defer></script>
+    
+    <script type="module" src="js/layers.js" defer></script>
+
+    <script type="module" src="js/download.js" defer></script>
+
+    <script type="module" src="js/upload_kml.js" defer></script>
+
+    <script type="module" src="js/upload_csv.js" defer></script>
+</body>
+</html>
+
+image_tile.sh:
+#!/usr/bin/bash
+
+# script to download Image tile from mapbox `
+
+# Input parameters
+# $1 = Input centre longitude (data type: float)
+# $2 = Input centre latitude  (data type: float)
+# $3 = Zoom level (data type: integer)
+
+# Example usage: 
+# chmod +x image_tile.sh
+# ./image_tile.sh 80.203561 12.975272 16
+
+
+# $1, $2, and $3 are command-line arguments representing centerLng, centerLat, and zoom respectively.
+echo "const config = { 
+    gps: { 
+        centerLng: $1, 
+        centerLat: $2, 
+        zoom: $3 
+        } 
+    };
+
+export default config;" > js/config.js
+
+# Print the center longitude, latitude, and zoom level to the console.
+echo lng: $1
+echo lat: $2
+echo zoom: $3
+
+# Set various parameters for creating a Mapbox static image.
+username=sravya-bhandaru
+styleId=clofgx84u005d01o6e5am70l2
+static=static
+bearing=0
+imageWidth=512
+imageHeight=512
+token=access_token=pk.eyJ1Ijoic3JhdnlhLWJoYW5kYXJ1IiwiYSI6ImNsb2ZheHc5czBtcDYyaW11MHI1d2xrN2QifQ.4oFhlnVTsfXFy_MzizcWDA
+url=https://api.mapbox.com/styles/v1
+
+# Construct the final URL for the Mapbox static image.
+final_url=$url/$username/$styleId/$static/$1,$2,$3,$bearing/$imageWidth'x'$imageHeight'@2x?'$token
+
+# Print the final URL to the console.
+echo $final_url
+
+# Download the Mapbox static image using cURL and save it as "mapTile.jpeg" in the "images" directory.
+# Note: The `curl` command fetches the image and outputs the result to the console.
+echo `curl -o images/mapTile.jpeg $final_url`
+
+# Print a message indicating that the map tile has been downloaded.
+echo map tile downloaded.
+
+js/config.js:
+// Define a configuration object for GPS-related parameters.
+const config = { 
+  gps: { 
+    centerLng: 73.56795,    // Set the center longitude to 73.56795 (data type: float)
+    centerLat: 18.864769,   // Set the center latitude to 18.864769 (data type: float)
+    zoom: 15                // Set the zoom level to 15 (data type: integer)
+  } 
+};
+
+// Export the configuration object as the default export of the module.
+export default config;
+
+js/utility.js:
+// Import the configuration object from config.js
+import config from './config.js';
+
+// Function to calculate image coordinates
+export function calculateImageCoordinates(config) {
+  // Extract relevant information from the configuration object
+  const zoom = config.gps.zoom;
+  const input_lat = config.gps.centerLat;
+  const input_lon = config.gps.centerLng;
+
+  // Calculate the number of tiles based on the zoom level
+  const numTiles = Math.pow(2, zoom);
+
+  // Calculate the latitude and longitude range per tile
+  const latRange = 360 / numTiles;
+  const lonRange = 360 / numTiles;
+
+  // Calculate half of the latitude and longitude range
+  const lat = latRange / 2;
+  const lon = lonRange / 2;
+
+  // Calculate the coordinates of the image corners
+  const upper_left_lat_coordinate = input_lat + lat;
+  const upper_left_lon_coordinate = input_lon - lon;
+  const lower_right_lat_coordinate = input_lat - lat;
+  const lower_right_lon_coordinate = input_lon + lon;
+
+  // Return an array containing the calculated coordinates
+  return [
+    upper_left_lat_coordinate,
+    upper_left_lon_coordinate,
+    lower_right_lat_coordinate,
+    lower_right_lon_coordinate,
+  ];
+}
+
+// Call the calculateImageCoordinates function with the config object
+const coordinates = calculateImageCoordinates(config);
+
+// Log the calculated coordinates
+console.log('Image Coordinates:', coordinates);
+
+
+// Function to calculate image position based on clicked coordinates
+export function getImagePosition(
+  input_lat,
+  input_lon,
+  upper_left_lat_coordinate,
+  upper_left_lon_coordinate,
+  lower_right_lat_coordinate,
+  lower_right_lon_coordinate
+) {
+  // Dimensions of the image
+  const image_X_dimension = 893;
+  const image_Y_dimension = 893;
+
+  // Calculate the X position within the image based on the clicked coordinates
+  const image_X_position =
+    ((input_lon - upper_left_lon_coordinate) /
+      (lower_right_lon_coordinate - upper_left_lon_coordinate)) *
+    image_X_dimension;
+
+  // Calculate the Y position within the image based on the clicked coordinates
+  const image_Y_position =
+    ((input_lat - upper_left_lat_coordinate) /
+      (lower_right_lat_coordinate - upper_left_lat_coordinate)) *
+    image_Y_dimension;
+
+  // Return an object with the calculated image positions
+  return { image_X_position, image_Y_position };
+}
+
+
+js/placemarks.js:
+// Import necessary functions and configuration from utility.js and config.js
+import { calculateImageCoordinates, getImagePosition } from './utility.js';
+import config from './config.js';
+
+
+// Initialize the boolean variable to control placemark placement
+let isPlacemarkEnabled = false;
+
+// Initialize the array to store placemark objects
+export const placemarks = [];
+
+// Get the reference to the image element with id "map"
+export const imageElement = document.getElementById('map');
+
+
+// Add an event listener to the "Add Placemarks" button
+const addPlacemarksBtn = document.getElementById('addPlacemarksBtn');
+addPlacemarksBtn.addEventListener('click', () => {
+  // Toggle the boolean variable for enabling/disabling placemark placement
+  isPlacemarkEnabled = !isPlacemarkEnabled;
+
+  // Change the button text based on the state
+  addPlacemarksBtn.textContent = isPlacemarkEnabled ? 'Disable Placemarks' : 'Add Placemarks';
+
+  // Add an event listener for the click event on the "Clear Placemarks" button
+  const clearPlacemarksBtn = document.getElementById('clearPlacemarksBtn');
+  clearPlacemarksBtn.addEventListener('click', () => {
+    // Clear the placemarks array
+    placemarks.length = 0;
+
+    // Clear the placemarks on the map by rendering an updated view
+    const coordinates = calculateImageCoordinates(config);
+    renderPlacemarks(coordinates, placemarks, getImagePosition);
+  });
+});
+
+// Add an event listener for the click event on the image
+imageElement.addEventListener('click', (event) => {
+  // Check if placemark placement is enabled
+  if (isPlacemarkEnabled) {
+    // Get the current image coordinates based on the configuration
+    const coordinates = calculateImageCoordinates(config);
+    const upper_left_lat_coordinate = coordinates[0];
+    const upper_left_lon_coordinate = coordinates[1];
+    const lower_right_lat_coordinate = coordinates[2];
+    const lower_right_lon_coordinate = coordinates[3];
+
+    // Calculate the latitude and longitude of the clicked point
+    const clickedCoordinates = {
+      // Calculate the latitude based on the event and image coordinates
+      input_lat:
+        upper_left_lat_coordinate -
+        (event.offsetY / imageElement.clientHeight) *
+          (upper_left_lat_coordinate - lower_right_lat_coordinate),
+
+      // Calculate the longitude based on the event and image coordinates
+      input_lon:
+        (event.offsetX / imageElement.clientWidth) *
+          (lower_right_lon_coordinate - upper_left_lon_coordinate) +
+        upper_left_lon_coordinate,
+    };
+
+    // Create a new placemark object with calculated coordinates and an image source
+    const placemark = {
+      coordinates: [clickedCoordinates.input_lat, clickedCoordinates.input_lon],
+      imageSrc: 'icons/map-pin-red.png', // Image source 
+    };
+
+    // Append the new placemark object to the placemarks array
+    placemarks.push(placemark);
+
+    // Render the updated placemarks on the map
+    renderPlacemarks(coordinates, placemarks, getImagePosition);
+  }
+});
+
+// Function to render placemarks on the map
+export function renderPlacemarks(coordinates, placemarks, getImagePosition) {
+  // Clear existing placemarks on the map by emptying the placemark container
+  document.getElementById('placemark-container').innerHTML = '';
+
+  // Render each placemark on the map
+  placemarks.forEach((placemark) => {
+    // Get the image position based on placemark coordinates and map coordinates
+    const { image_X_position, image_Y_position } = getImagePosition(
+      placemark.coordinates[0],
+      placemark.coordinates[1],
+      coordinates[0],
+      coordinates[1],
+      coordinates[2],
+      coordinates[3]
+    );
+
+    // Create a new image element for the placemark
+    const placemarkImage = document.createElement('img');
+    placemarkImage.src = placemark.imageSrc;
+    placemarkImage.style.position = 'absolute';
+    placemarkImage.style.left = image_X_position + 'px';
+    placemarkImage.style.top = (image_Y_position - 28) + 'px';
+    placemarkImage.style.width = '30px';
+    placemarkImage.style.height = '30px';
+    placemarkImage.style.zIndex = '4';
+
+    // Append the image to the map by adding it to the placemark container
+    document.getElementById('placemark-container').appendChild(placemarkImage);
+  });
+}
+
+
+js/polylines.js:
+// Import necessary functions and objects from utility.js and placemarks.js
+import { calculateImageCoordinates, getImagePosition } from './utility.js';
+import { imageElement } from './placemarks.js';
+import config from './config.js';
+
+
+// Initialize the boolean variable to control polyline placement
+let isPolylineEnabled = false;
+
+// Exported variable to store polyline coordinates
+export let polylineCoordinates = [];
+
+
+// Add an event listener for the "Add Polyline" button
+const drawPolylineBtn = document.getElementById('drawPolylineBtn');
+const canvas = document.getElementById('canvas'); // Assuming you have a canvas element with id="canvas"
+export const ctx = canvas.getContext('2d');
+
+drawPolylineBtn.addEventListener('click', () => {
+  // Toggle the boolean variable
+  isPolylineEnabled = !isPolylineEnabled;
+
+  // Change the button text based on the state
+  drawPolylineBtn.textContent = isPolylineEnabled ? 'Disable Polyline' : 'Add Polyline';
+
+  console.log('Polyline Drawing Enabled:', isPolylineEnabled);
+  console.log('Polyline Coordinates:', polylineCoordinates);
+});
+
+// Update the event listener for the image click to handle polyline drawing
+imageElement.addEventListener('click', (event) => {
+  // Check if polyline drawing is enabled
+  if (isPolylineEnabled) {
+    // Get the latitude and longitude of the clicked point using utility.js functions
+    const coordinates = calculateImageCoordinates(config);
+    const upper_left_lat_coordinate = coordinates[0];
+    const upper_left_lon_coordinate = coordinates[1];
+    const lower_right_lat_coordinate = coordinates[2];
+    const lower_right_lon_coordinate = coordinates[3];
+
+    // Calculate the clicked coordinates based on the clicked point on the image
+    const clickedCoordinates = {
+      input_lat:
+        upper_left_lat_coordinate -
+        (event.offsetY / imageElement.clientHeight) * (upper_left_lat_coordinate - lower_right_lat_coordinate),
+      input_lon:
+        (event.offsetX / imageElement.clientWidth) * (lower_right_lon_coordinate - upper_left_lon_coordinate) +
+        upper_left_lon_coordinate,
+    };
+
+    // Add the clicked coordinates to the polylineCoordinates array
+    polylineCoordinates.push([clickedCoordinates.input_lat, clickedCoordinates.input_lon]);
+
+    // Draw the polyline on the canvas using the renderPolyline function
+    renderPolyline(coordinates, polylineCoordinates, getImagePosition, ctx);
+
+    console.log('Polyline Coordinates Updated:', polylineCoordinates);
+  }
+});
+
+// Exported function to render a polyline on the canvas
+export function renderPolyline(coordinates, polylineCoordinates, getImagePosition, ctx) {
+  // Clear the canvas
+  ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+
+  // Draw the new polyline on the canvas
+  ctx.beginPath();
+
+  if (polylineCoordinates.length > 0) {
+    // Map the first polyline coordinate to image position
+    const { image_X_position, image_Y_position } = getImagePosition(
+      polylineCoordinates[0][0],
+      polylineCoordinates[0][1],
+      coordinates[0],
+      coordinates[1],
+      coordinates[2],
+      coordinates[3]
+    );
+
+    ctx.moveTo(image_X_position, image_Y_position);
+
+    // Loop through the remaining polyline coordinates and draw the polyline
+    for (let i = 1; i < polylineCoordinates.length; i++) {
+      const { image_X_position, image_Y_position } = getImagePosition(
+        polylineCoordinates[i][0],
+        polylineCoordinates[i][1],
+        coordinates[0],
+        coordinates[1],
+        coordinates[2],
+        coordinates[3]
+      );
+
+      ctx.lineTo(image_X_position, image_Y_position);
+    }
+  }
+
+  // Set the polyline style and stroke
+  ctx.strokeStyle = 'red';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+}
+
+// Function to clear polylines on the map (clear the canvas)
+function clearPolylines(ctx) {
+  // Clear the canvas
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+}
+
+// Event listener for the "Clear Polyline" button
+clearPolylineBtn.addEventListener('click', () => {
+  // Clear the polyline array
+  polylineCoordinates.length = 0;
+
+  // Clear the polylines on the map (clear the canvas)
+  clearPolylines(ctx);
+
+  console.log('Polyline Cleared');
+});
+
+
+js/layers.js:
+// Importing necessary functions and configurations from external files
+import { calculateImageCoordinates, getImagePosition } from './utility.js';
+import { placemarks, renderPlacemarks } from './placemarks.js';
+import { polylineCoordinates, renderPolyline, ctx } from './polylines.js';
+import config from './config.js';
+
+// Declaring an array to store saved layers
+export let savedLayers = [];
+
+// Event listener for the "Save Layer" button
+const saveLayerBtn = document.getElementById('saveLayerBtn');
+saveLayerBtn.addEventListener('click', () => {
+  // Prompt the user for a layer name
+  const layerName = prompt('Enter a name for the layer:');
+
+  // Check if the user entered a layer name
+  if (layerName !== null && layerName.trim() !== '') {
+    // Create a new layer object containing placemarks, polylineCoordinates, and the layer name
+    const newLayer = {
+      name: layerName,
+      placemarks: [...placemarks], // Copy current placemarks
+      polylineCoordinates: [...polylineCoordinates], // Copy current polylineCoordinates
+      // Add other properties as needed based on your requirements
+    };
+
+    // Add the new layer to the savedLayers array
+    savedLayers.push(newLayer);
+
+    // Display a button for the saved layer in the sidebar
+    displaySavedLayerButton(savedLayers.length, layerName);
+  }
+});
+
+// Event listener for the "Delete Layer(s)" button
+const deleteLayerBtn = document.getElementById('deleteLayerBtn');
+deleteLayerBtn.addEventListener('click', () => {
+  // Get all checkboxes for saved layers
+  const checkboxes = document.querySelectorAll('[type="checkbox"]');
+  
+  // Iterate through checkboxes and delete corresponding layers
+  checkboxes.forEach((checkbox, index) => {
+    if (checkbox.checked) {
+      // Remove the layer from savedLayers array
+      savedLayers.splice(index, 1);
+      
+      // Remove the checkbox and label from the sidebar
+      const checkboxContainer = checkbox.parentElement;
+      checkboxContainer.remove();
+    }
+  });
+});
+
+// Function to display a checkbox for the saved layer in the sidebar
+export function displaySavedLayerButton(layerNumber, layerName) {
+  const savedLayersContainer = document.getElementById('savedLayersContainer');
+
+  // Create a container div for the saved layer
+  const layerContainer = document.createElement('div');
+  layerContainer.classList.add('mb-2');
+
+  // Create a checkbox for the saved layer
+  const layerCheckbox = document.createElement('input');
+  layerCheckbox.type = 'checkbox';
+  layerCheckbox.id = `layerCheckbox${layerNumber}`;
+
+  // Create a label for the checkbox with the layer name
+  const layerLabel = document.createElement('label');
+  layerLabel.textContent = `Layer ${layerNumber}: ${layerName}`;
+  layerLabel.htmlFor = `layerCheckbox${layerNumber}`;
+
+  // Add an event listener to switch to the saved layer when the checkbox is clicked
+  layerCheckbox.addEventListener('change', () => switchToSavedLayer(layerNumber));
+
+  // Append the checkbox and label to the layer container
+  layerContainer.appendChild(layerCheckbox);
+  layerContainer.appendChild(layerLabel);
+
+  // Append the container to the sidebar
+  savedLayersContainer.appendChild(layerContainer);
+}
+
+// Function to switch to a saved layer
+function switchToSavedLayer(layerNumber) {
+  const layerIndex = layerNumber - 1;
+
+  // Update the current placemarks and polylineCoordinates arrays based on the selected layer
+  placemarks.length = 0;
+  polylineCoordinates.length = 0;
+
+  // Iterate through all checkboxes to combine placemarks and polylineCoordinates from selected layers
+  savedLayers.forEach((layer, index) => {
+    const checkbox = document.getElementById(`layerCheckbox${index + 1}`);
+    if (checkbox.checked) {
+      const coordinates = calculateImageCoordinates(config);
+
+      // Add placemarks from the selected layer
+      placemarks.push(...layer.placemarks);
+
+      // Add polylineCoordinates from the selected layer
+      polylineCoordinates.push(...layer.polylineCoordinates);
+    }
+  });
+
+  // Render the placemarks and polylines on the map
+  const coordinates = calculateImageCoordinates(config);
+  renderPlacemarks(coordinates, placemarks, getImagePosition);
+  renderPolyline(coordinates, polylineCoordinates, getImagePosition, ctx);
+}
+
+
+js/download.js:
+// Import placemarks and polylineCoordinates from external files
+import { placemarks } from './placemarks.js';
+import { polylineCoordinates } from './polylines.js';
+
+
+
+// DOWNLOAD IMAGE
+// Add an event listener for the "Image" dropdown item
+const downloadImageBtn = document.getElementById('downloadImageBtn');
+
+downloadImageBtn.addEventListener('click', () => {
+  // Capture the screenshot of the map-container
+  html2canvas(document.getElementById('map-container')).then((canvas) => {
+    // Create an anchor element to download the image
+    const downloadLink = document.createElement('a');
+    downloadLink.href = canvas.toDataURL('image/png'); // Data URL representing the image
+    downloadLink.download = 'map_image.png';
+
+    // Append the anchor element to the body and trigger a click to start the download
+    document.body.appendChild(downloadLink);
+    downloadLink.click();
+
+    // Remove the anchor element from the body
+    document.body.removeChild(downloadLink);
+  });
+});
+
+
+
+// DOWNLOAD KML
+// Add an event listener for the "KML" dropdown item
+const downloadKMLBtn = document.getElementById('downloadKMLBtn');
+
+downloadKMLBtn.addEventListener('click', () => {
+  // Create separate KML files for placemarks and polylines
+  const placemarksKML = generatePlacemarksKML(); // Generate KML content for placemarks
+  const polylinesKML = generatePolylinesKML();   // Generate KML content for polylines
+
+  // Combine placemarks and polylines KML content
+  const combinedKML = `${placemarksKML}\n${polylinesKML}`;
+
+  // Create a Blob from the combined KML content
+  const blob = new Blob([combinedKML], { type: 'application/xml' });
+
+  // Create a download link for the Blob
+  const downloadLink = document.createElement('a');
+  downloadLink.href = URL.createObjectURL(blob); // URL representing the KML Blob
+  downloadLink.download = 'map_data.kml';
+
+  // Append the link to the body and trigger a click to start the download
+  document.body.appendChild(downloadLink);
+  downloadLink.click();
+
+  // Remove the link from the body
+  document.body.removeChild(downloadLink);
+});
+
+
+// Function to generate KML content for placemarks
+function generatePlacemarksKML() {
+  // Assuming placemarks array contains objects with 'coordinates' and 'imageSrc' properties
+  const placemarksKMLContent = placemarks
+    .map(
+      (placemark, index) =>
+        `<Placemark id="Placemark_${index}">
+          <name>Placemark ${index + 1}</name>
+          <LookAt>
+            <longitude>${placemark.coordinates[1]}</longitude>
+            <latitude>${placemark.coordinates[0]}</latitude>
+            <altitude>0</altitude>
+          </LookAt>
+          <styleUrl>#__managed_style_033DA21BBA2E1D243F8F</styleUrl>
+          <Point>
+            <coordinates>${placemark.coordinates[1]},${placemark.coordinates[0]},0</coordinates>
+          </Point>
+        </Placemark>`
+    )
+    .join('\n');
+
+  // Return KML content for placemarks
+  return `<kml xmlns="http://www.opengis.net/kml/2.2">\n<Document>\n${placemarksKMLContent}`;
+}
+
+
+// Function to generate KML content for polylines
+function generatePolylinesKML() {
+  // Assuming polylineCoordinates array contains arrays of coordinates [lat, lon]
+  const polylinesKMLContent = `<Placemark id="Polyline">
+    <name>Polyline</name>
+    <LookAt>
+      <longitude>${polylineCoordinates[0][1]}</longitude>
+      <latitude>${polylineCoordinates[0][0]}</latitude>
+      <altitude>0</altitude>
+    </LookAt>
+    <styleUrl>#__managed_style_033DA21BBA2E1D243F8F</styleUrl>
+    <LineString>
+      <coordinates>${polylineCoordinates
+        .map((coordinate) => `${coordinate[1]},${coordinate[0]},0`)
+        .join(' ')}</coordinates>
+    </LineString>
+  </Placemark>`;
+
+  // Return KML content for polylines
+  return `${polylinesKMLContent}\n</Document>\n</kml>`;
+}
+
+
+js/upload_kml.js:
+// Importing savedLayers array and displaySavedLayerButton function from 'layers.js'
+import { savedLayers, displaySavedLayerButton } from './layers.js';
+
+// Function to handle file upload and plot KML on the map
+function handleKMLUpload() {
+    // Get the file input element
+    const uploadKMLBtn = document.getElementById('uploadKMLBtn');
+  
+    // Add an event listener to the file input element
+    uploadKMLBtn.addEventListener('change', (event) => {
+        // Get the selected file from the input
+        const file = event.target.files[0];
+  
+        if (file) {
+            // Read the contents of the file using FileReader
+            const reader = new FileReader();
+  
+            reader.onload = function (e) {
+                // Parse the KML content
+                const kmlContent = e.target.result;
+  
+                // Extract placemarks and polylines from KML content
+                const { placemarks, polylineCoordinates } = extractFeaturesFromKML(kmlContent);
+  
+                // Prompt the user for a layer name (using the uploaded file name)
+                const layerName = file.name.replace(/\.[^/.]+$/, ""); // Remove file extension
+  
+                // Create a new layer object containing placemarks, polylines, and the layer name
+                const newLayer = {
+                    name: layerName,
+                    placemarks: [...placemarks],
+                    polylineCoordinates: [...polylineCoordinates],
+                    // Add other properties as needed based on your requirements
+                };
+  
+                // Add the new layer to the savedLayers array
+                savedLayers.push(newLayer);
+  
+                // Display a button for the saved layer in the sidebar
+                displaySavedLayerButton(savedLayers.length, layerName);
+            };
+  
+            // Read the file as text
+            reader.readAsText(file);
+        }
+    });
+}
+
+// Function to extract placemarks and polylines from KML content
+function extractFeaturesFromKML(kmlContent) {
+    // Parse the KML content using an appropriate parser (e.g., DOMParser)
+    const parser = new DOMParser();
+    const xmlDoc = parser.parseFromString(kmlContent, 'application/xml');
+  
+    // Extract placemark and polyline elements from the KML document
+    const placemarkElements = xmlDoc.getElementsByTagName('Placemark');
+    const polylineElements = xmlDoc.getElementsByTagName('LineString');
+  
+    // Create arrays to store extracted placemarks and polylines
+    const placemarks = [];
+    const polylineCoordinates = [];
+  
+    // Extract placemarks
+    for (let i = 0; i < placemarkElements.length; i++) {
+        const placemarkElement = placemarkElements[i];
+        const coordinatesElement = placemarkElement.querySelector('coordinates');
+  
+        if (coordinatesElement) {
+            // Splitting coordinates and converting to numeric values
+            const coordinates = coordinatesElement.textContent.trim().split(',');
+            const latitude = parseFloat(coordinates[1]);
+            const longitude = parseFloat(coordinates[0]);
+  
+            // Creating a placemark object with coordinates and image source
+            const placemark = {
+                coordinates: [latitude, longitude],
+                imageSrc: 'icons/pin-fill.svg', // Image source
+                // Add other properties as needed based on your requirements
+            };
+  
+            placemarks.push(placemark);
+        }
+    }
+  
+    // Extract polylines
+    for (let i = 0; i < polylineElements.length; i++) {
+        const polylineElement = polylineElements[i];
+        const coordinatesElement = polylineElement.querySelector('coordinates');
+  
+        if (coordinatesElement) {
+            // Splitting coordinates and mapping to an array of [latitude, longitude]
+            const coordinates = coordinatesElement.textContent.trim().split(' ');
+            const polyline = coordinates.map((coord) => {
+                const [longitude, latitude] = coord.split(',').map(parseFloat);
+                return [latitude, longitude];
+            });
+  
+            polylineCoordinates.push(polyline);
+        }
+    }
+  
+    return { placemarks, polylineCoordinates };
+}
+
+// Call the function to handle KML upload
+handleKMLUpload();
+
+
+js/upload_csv.js:
+// Importing configuration, utility functions, and data structures from external modules
+import config from './config.js';
+import { calculateImageCoordinates, getImagePosition } from "./utility.js";
+import { placemarks } from "./placemarks.js";
+import { polylineCoordinates, renderPolyline, ctx } from "./polylines.js";
+import { savedLayers, displaySavedLayerButton } from "./layers.js";
+
+// Accessing the file input element from the DOM
+const uploadCSVBtn = document.getElementById('uploadCSVBtn');
+
+// Adding an event listener to the file input element for CSV upload
+uploadCSVBtn.addEventListener('change', (event) => {
+  // Get the selected file from the input
+  const file = event.target.files[0];
+
+  if (file) {
+    // Parsing the contents of the file using PapaParse library
+    Papa.parse(file, {
+      header: true,          // Indicates that the first row contains headers
+      dynamicTyping: true,    // Automatically converts appropriate values to numbers or booleans
+      complete: function (results) {
+        // Extracting longitude and latitude from the CSV data
+        const points = results.data.map((row) => ({
+          latitude: row.latitude,                         // Latitude value from CSV row
+          longitude: row.longitude,                       // Longitude value from CSV row
+          altitude: row.altitude,                         // Altitude value from CSV row
+          distance_from_boundarycentre: row.distance_from_boundarycentre, // Distance value from CSV row
+        }));
+
+        // Calculating image coordinates based on the map configuration
+        const mapCoordinates = calculateImageCoordinates(config);
+
+        // Converting CSV points to polyline coordinates and filtering within boundaries
+        const filteredPolylineCoordinates = points
+          .map((point) => {
+            // Converting latitude and longitude to image positions
+            const imagePosition = getImagePosition(
+              point.latitude,
+              point.longitude,
+              mapCoordinates[0],
+              mapCoordinates[1],
+              mapCoordinates[2],
+              mapCoordinates[3]
+            );
+
+            // Checking if the point is within the specified boundaries
+            if (
+              imagePosition.image_X_position >= 0 &&
+              imagePosition.image_X_position <= 893 &&
+              imagePosition.image_Y_position >= 0 &&
+              imagePosition.image_Y_position <= 893
+            ) {
+              return [point.latitude, point.longitude]; // Including points within boundaries
+            } else {
+              return null; // Excluding points outside boundaries
+            }
+          })
+          .filter((point) => point !== null);
+
+        // Clearing existing placemarks and polylineCoordinates arrays
+        placemarks.length = 0;
+        polylineCoordinates.length = 0;
+
+        // Assigning CSV polyline coordinates within boundaries to the polylineCoordinates array
+        polylineCoordinates.push(...filteredPolylineCoordinates);
+
+        // Rendering the polylines on the map
+        const coordinates = calculateImageCoordinates(config);
+        renderPolyline(coordinates, polylineCoordinates, getImagePosition, ctx);
+
+        // Saving the CSV data as a layer
+        const layerName = file.name.replace(/\.[^/.]+$/, ''); // Remove file extension
+        const newLayer = {
+          name: layerName,
+          placemarks: [...placemarks],
+          polylineCoordinates: [...polylineCoordinates], // Copying corrected polylineCoordinates
+          // Add other properties as needed based on your requirements
+        };
+
+        // Adding the new layer to the savedLayers array
+        savedLayers.push(newLayer);
+
+        // Displaying a button for the saved layer in the sidebar
+        displaySavedLayerButton(savedLayers.length, layerName);
+
+        // Resetting the value of the file input element to allow uploading the same file again
+        uploadCSVBtn.value = null;
+      },
+    });
+  }
+});
+
